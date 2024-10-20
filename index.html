@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simantap Payment Gateway</title>
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(120deg, #1f0039, #29003d, #320042);
+      color: #fff;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .hero-section {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      color: #fff;
+    }
+
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background-color: #1e1e2d;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+      width: 300px;
+      margin-top: 20px;
+    }
+
+    #card-element {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 1.1rem;
+      color: #fff;
+      background-color: #6250e5;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #4f3ec7;
+    }
+
+    .info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      font-size: 1.1rem;
+    }
+
+    .info div {
+      text-align: left;
+    }
+
+    .info p {
+      margin: 0;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 1rem;
+    }
+
+    #error-message {
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="hero-section">
+      <h1>Best way to make online payments</h1>
+      <p>Make payments securely with Simantap. Simple, easy, and reliable.</p>
+
+      <div class="card">
+        <form id="payment-form">
+          <div id="card-element"><!-- Stripe will inject a form here --></div>
+          <button id="submit">Pay $10</button>
+          <div id="error-message"></div>
+        </form>
+      </div>
+
+      <div class="info">
+        <div>
+          <p><strong>$10M+</strong> Transactions</p>
+        </div>
+        <div>
+          <p><strong>2300+</strong> Active Users</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Powered by Simantap. All rights reserved &copy; 2024</p>
+    </div>
+  </div>
+
+  <script>
+    const stripe = Stripe('pk_test_51QBtuC05haCqmbwjRNgmhd5h9Whlrf1rl8UZR6wZeTcnjAPmx17aZN3pgYMx7mzxTPJfG7wQhaOoiLobI5vuckbM00SLWBYYIh'); // Your Stripe public key
+    const elements = stripe.elements();
+    const cardElement = elements.create('card');
+    cardElement.mount('#card-element');
+
+    const form = document.getElementById('payment-form');
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const response = await fetch('/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: 1000,  // $10 in cents
+          currency: 'usd'
+        }),
+      });
+
+      const { clientSecret } = await response.json();
+
+      const { error } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: cardElement,
+        },
+      });
+
+      if (error) {
+        document.getElementById('error-message').textContent = error.message;
+      } else {
+        alert('Payment successful!');
+      }
+    });
+  </script>
+</body>
+
+</html>
+
+ 
